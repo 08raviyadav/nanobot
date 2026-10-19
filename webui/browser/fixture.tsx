@@ -13,6 +13,8 @@ import { fetchWebuiThread } from "@/lib/api";
 import { projectThreadEvents } from "@/lib/thread-event-projection";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { SettingsIcon } from "@/components/icons/product-icons";
 import { initializeI18n } from "@/i18n";
 import type { McpPresetInfo, UIMessage } from "@/lib/types";
 import "../src/globals.css";
@@ -140,6 +142,8 @@ createRoot(document.getElementById("root")!).render(<TooltipProvider>
     ? <ClientProvider client={railClient} token="fixture"><AppsFixture /></ClientProvider>
     : parameters.get("case") === "rail"
     ? <ClientProvider client={railClient} token="fixture" webuiCapabilities={["webui.prompt-navigation.v1"]}><RailFixture /></ClientProvider>
+    : parameters.get("case") === "settings-icon"
+    ? <Button variant="icon" size="icon" aria-label="Settings"><SettingsIcon className="h-4 w-4" /></Button>
     : parameters.get("case") === "history"
     ? <HistoryFixture />
     : <TallDialogFixture placement={parameters.get("placement") === "bottom" ? "bottom" : "center"} />}
