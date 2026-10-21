@@ -486,7 +486,7 @@ def append_transcript_object(
 
 async def append_session_message_input(
     session_key: str, *, sessions: SessionManager, content: str, created_at_ms: int,
-    session_message: Mapping[str, Any], expected_generation: str,
+    session_message: Mapping[str, Any],
 ) -> None:
     chat_id = _chat_id_from_session_key(session_key)
     if chat_id is None:
@@ -496,7 +496,7 @@ async def append_session_message_input(
         return
     event.update(created_at_ms=created_at_ms, session_message=dict(session_message))
     await sessions.state.append_history(session_key, [fact_from_record(event)],
-                                         expected_generation=expected_generation)
+                                         expected_generation=None)
 
 
 def normalize_webui_turn_id(value: Any) -> str:
