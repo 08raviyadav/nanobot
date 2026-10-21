@@ -481,7 +481,10 @@
     "options": "AboutSettingsView はバージョンとサポートリンクの組み合わせを受け取ります。VersionCheckRowView は checking/result を表示し、onCheck で確認を要求します。実際の確認と診断リンクのデータは機能の入口が管理します。",
     "error": "バージョン情報を取得できませんでした。再試行してください。",
     "state": "バージョンの状態",
-    "selectedLink": "GitHub リンクを選択しました"
+    "selectedLink": "GitHub リンクを選択しました",
+    "preferenceSaved": "サンプル設定を保存しました。インストールや再起動は行いません。",
+    "updateRequested": "更新の確認を選択しました。このプレビューではインストールや再起動は行いません。",
+    "dismissed": "更新通知を閉じました"
   },
   "appearance": {
     "title": "表示設定",

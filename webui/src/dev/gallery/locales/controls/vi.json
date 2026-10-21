@@ -481,7 +481,10 @@
     "options": "AboutSettingsView nhận tổ hợp liên kết phiên bản và hỗ trợ. VersionCheckRowView hiển thị checking/result và yêu cầu kiểm tra qua onCheck. Điểm vào tính năng quản lý kiểm tra thực tế và dữ liệu liên kết chẩn đoán.",
     "error": "Không thể lấy thông tin phiên bản. Hãy thử lại.",
     "state": "Trạng thái phiên bản",
-    "selectedLink": "Đã chọn liên kết GitHub"
+    "selectedLink": "Đã chọn liên kết GitHub",
+    "preferenceSaved": "Đã lưu tùy chọn mẫu; sẽ không cài đặt hay khởi động lại.",
+    "updateRequested": "Đã chọn xem xét bản cập nhật; bản xem trước này không cài đặt hay khởi động lại.",
+    "dismissed": "Đã ẩn thông báo cập nhật"
   },
   "appearance": {
     "title": "Tùy chọn giao diện",

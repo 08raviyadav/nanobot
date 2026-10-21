@@ -481,7 +481,10 @@
     "options": "AboutSettingsView aceita uma composição de links de versão e suporte. VersionCheckRowView exibe checking/result e solicita verificações por onCheck. O ponto de entrada gerencia as verificações reais e os dados dos links de diagnóstico.",
     "error": "Não foi possível obter a versão. Tente novamente.",
     "state": "Estado da versão",
-    "selectedLink": "Link do GitHub selecionado"
+    "selectedLink": "Link do GitHub selecionado",
+    "preferenceSaved": "Preferência de exemplo salva; nada será instalado ou reiniciado.",
+    "updateRequested": "Revisão da atualização selecionada; esta prévia não instala nem reinicia nada.",
+    "dismissed": "Aviso de atualização dispensado"
   },
   "appearance": {
     "title": "Preferências de aparência",

@@ -16,17 +16,17 @@ Use the launcher:
 nanobot webui
 ```
 
-`nanobot webui` asks for one confirmation on a new installation, creates the config/workspace, enables the local WebSocket channel, and generates a WebUI bootstrap secret when one is missing. It starts or joins the same on-demand gateway used by the native TUI and opens the browser. With a fresh config, it can open before a model is configured so you can finish setup in **Settings → Models**. The first-run path binds the WebUI to `127.0.0.1` by default, so it is not available from other devices on your LAN. The startup summary groups the login link, model setup guidance, config, and exit controls with blank lines. While attached, the launcher displays new gateway warnings and errors; use the printed logs command for full output.
+`nanobot webui` asks for one confirmation on a new installation, creates the config/workspace, enables the local WebSocket channel, and generates a WebUI bootstrap secret when one is missing. It starts or joins the same gateway used by the native TUI and opens the browser. Fresh official-installer environments start it persistently and return control to the terminal; other installations keep the attached on-demand launch. With a fresh config, it can open before a model is configured so you can finish setup in **Settings → Models**. The first-run path binds the WebUI to `127.0.0.1` by default, so it is not available from other devices on your LAN. The startup summary groups the login link, model setup guidance, config, and exit controls with blank lines. While attached, the launcher displays new gateway warnings and errors; use the printed logs command for full output.
 
-After model setup, explicitly promote the shared gateway when you do not want to keep a client open:
+Outside an installer-managed environment, use `nanobot webui --detach` to open the browser and keep the gateway running after the terminal closes. Alternatively, start or promote the same shared gateway explicitly:
 
 ```bash
 nanobot gateway --background
 ```
 
-`nanobot webui --background` is retained only to print migration guidance. This keeps one unambiguous owner for persistent process lifecycle.
+`nanobot webui --background` remains deprecated and prints migration guidance. All launch routes use the same gateway lifecycle owner and state.
 
-Each foreground WebUI or TUI launcher releases only its own client. The last interactive launcher stops an on-demand gateway. `nanobot gateway --background` makes the gateway persistent; manage it with `nanobot gateway status`, `nanobot gateway logs`, `nanobot gateway restart`, and `nanobot gateway stop`.
+Each foreground WebUI or TUI launcher releases only its own client. The last interactive launcher stops an on-demand gateway, but not a persistent one. Manage the persistent gateway with `nanobot gateway status`, `nanobot gateway logs`, `nanobot gateway restart`, and `nanobot gateway stop`. Use the printed instance-specific commands when you selected a custom config or workspace. `--detach --dev` is unsupported; development remains attached.
 
 The browser signs in automatically using the generated credential in the launch URL. The terminal also prints the complete login link: if automatic opening fails, copy that link into your browser, including the fragment after `#`. In WSL, the launcher opens your Windows default browser through Windows PowerShell; an explicit `BROWSER` setting takes precedence. If Windows integration is unavailable, open the printed link in your Windows browser. The plain page address does not sign in a new browser. Treat the login link as a credential and do not share it.
 
@@ -55,6 +55,16 @@ Manual config still works. Same-machine localhost WebUI access can run without a
 </details>
 
 The WebUI is served by the WebSocket channel on port `8765` by default. The gateway health endpoint, `18790` by default, is not the browser UI.
+
+### macOS Dock icon
+
+In a local macOS desktop session, `nanobot webui` shows the nanobot cat in the Dock. Click it to open the current local WebUI in your default browser. `--no-open` keeps the icon but does not open a page automatically. SSH, headless, Windows and Linux launches keep their existing behavior. A one-shot connection to an unmanaged gateway does not leave an icon behind.
+
+Ordinary foreground launchers for the same instance, browser address and installation share an icon. The last WebUI launcher removes it when it exits, including after a terminal crash. For `--detach` and official-installer automatic background launch, the gateway owns the icon instead: closing the terminal does not remove it. An ordinary restart, successful update or supported automatic restoration shows it again once that gateway is activated. The icon can disappear while the service is stopped for an update; it is not an update-progress indicator. `nanobot gateway stop` removes it without changing configuration or chats.
+
+Use `--no-dock` to disable the icon for a launcher. In detached mode this also remembers the choice for that instance's later restarts; running `nanobot webui` without it enables the background icon again. The request is stored beside the runtime state as a small `.dock` file, without a URL or credentials. Choosing **Hide Dock Icon** or quitting the icon hides only this shortcut, not the gateway or its tasks. It stays hidden until another explicit launch or service restart. The icon is not a standalone launcher to keep pinned when nanobot is stopped.
+
+The helper uses the installed Python and macOS frameworks, with no Xcode, extra Python dependency, executable download or separate updater. Its temporary application wrapper is private to the OS user. The login URL stays in memory and a private socket, never in process arguments or a file. The helper holds no installation or data lease, and protected restart does not start it until activation. A missing image or unavailable desktop does not prevent WebUI startup, updates or independent recovery. Non-loopback browser addresses continue to use the normal browser launcher.
 
 ## Navigate a long conversation
 

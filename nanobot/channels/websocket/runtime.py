@@ -29,6 +29,7 @@ from nanobot.bus.queue import MessageBus
 from nanobot.channels.base import BaseChannel
 from nanobot.channels.websocket.binary_http import BinaryHTTPBridge
 from nanobot.config_base import Base
+from nanobot.runtime_admission import RuntimeMaintenanceError
 from nanobot.session.webui_turns import (
     clear_websocket_turn_if_current,
     mark_websocket_turn_transcript_persistence_failed,
@@ -705,6 +706,15 @@ class WebSocketChannel(BaseChannel):
         async def handler(connection: ServerConnection) -> None:
             await self._connection_loop(connection)
 
+        from aiohttp import web
+
+        async def handle_binary(request: web.BaseRequest) -> web.StreamResponse:
+            try:
+                with self.bus.admission.activity():
+                    return await self._uploads.handle(request)
+            except RuntimeMaintenanceError:
+                return web.json_response({"error": "Gateway update is being verified"}, status=503)
+
         async def prune_uploads() -> None:
             while not stop_event.is_set():
                 self._uploads.store.prune()
@@ -720,7 +730,7 @@ class WebSocketChannel(BaseChannel):
             failures = 0
             while not stop_event.is_set():
                 server: Server | None = None
-                bridge = BinaryHTTPBridge(self._uploads.handle)
+                bridge = BinaryHTTPBridge(handle_binary)
                 was_serving = False
                 started_at = 0.0
                 try:
@@ -967,6 +977,16 @@ class WebSocketChannel(BaseChannel):
         state.writer = asyncio.create_task(
             self._drain_connection_outbound(connection, state),
             name=f"websocket-outbound-{id(connection):x}",
+        )
+
+    @property
+    def has_pending_delivery(self) -> bool:
+        # send() only enqueues a frame. buffered_bytes includes the frame that
+        # a writer has removed from its queue but has not finished transmitting.
+        return bool(self._outbound_retire_tasks) or any(
+            state.buffered_bytes or not state.queue.empty()
+            or (state.writer is not None and not state.writer.done())
+            for state in self._connection_outbound.values()
         )
 
     async def _drain_connection_outbound(

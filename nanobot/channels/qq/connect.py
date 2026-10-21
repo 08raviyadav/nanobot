@@ -93,6 +93,19 @@ class QQConnectStore:
 
     def __init__(self) -> None:
         self._sessions: dict[str, QQConnectSession] = {}
+        self._commits: dict[str, asyncio.Task[None]] = {}
+        self._closed = False
+
+    @property
+    def has_pending_work(self) -> bool:
+        now = time.monotonic()
+        return bool(self._commits) or any(session.deadline > now for session in self._sessions.values())
+
+    async def close(self) -> None:
+        self._closed = True
+        self._sessions.clear()
+        if self._commits:
+            await asyncio.shield(asyncio.gather(*self._commits.values(), return_exceptions=True))
 
     async def handle(self, action: str, query: QueryParams) -> dict[str, Any]:
         if action == "start":
@@ -134,6 +147,10 @@ class QQConnectStore:
             # A transient portal error is not proof the scan failed; keep waiting.
             return _pending(session, "Waiting for QQ scan...")
 
+        self._cleanup()
+        if self._sessions.get(session_id) is not session:
+            return _payload(session_id, "expired", "This QQ login has expired. Start again.")
+
         status = result.get("status")
         if status == 3:
             self._sessions.pop(session_id, None)
@@ -151,7 +168,13 @@ class QQConnectStore:
         if not app_id or not secret:
             return _payload(session_id, "failed", "QQ confirmed the scan but returned no credentials.")
 
-        await asyncio.to_thread(save_credentials, app_id, secret)
+        # Cancelling the awaiting request cannot stop a file-writing thread.
+        # Retain ownership until the writer finishes, including during shutdown.
+        commit = asyncio.create_task(asyncio.to_thread(save_credentials, app_id, secret))
+        self._commits[session_id] = commit
+        commit.add_done_callback(lambda task: self._commits.pop(session_id, None))
+        commit.add_done_callback(lambda task: task.exception() if not task.cancelled() else None)
+        await asyncio.shield(commit)
         session.credentials = (app_id, secret)
         return {
             "session_id": session_id,
@@ -161,6 +184,8 @@ class QQConnectStore:
 
     async def cancel(self, session_id: str) -> dict[str, Any]:
         self._sessions.pop(session_id, None)
+        if commit := self._commits.get(session_id):
+            await asyncio.shield(asyncio.gather(commit, return_exceptions=True))
         return _payload(session_id, "cancelled", "QQ login cancelled.")
 
     async def login(self) -> tuple[str, str] | None:
@@ -181,6 +206,8 @@ class QQConnectStore:
             self._sessions.pop(session.id, None)
 
     def _new_session(self, task_id: str, key: str) -> QQConnectSession:
+        if self._closed:
+            raise ChannelConnectError("QQ connection store is closed", status=409)
         session = QQConnectSession(
             id=secrets.token_urlsafe(18),
             task_id=task_id,

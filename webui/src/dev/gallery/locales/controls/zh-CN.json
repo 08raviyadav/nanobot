@@ -481,7 +481,10 @@
     "options": "AboutSettingsView 接受版本与支持链接的组合。VersionCheckRowView 展示 checking/result，并通过 onCheck 请求检查。真实检查与诊断链接数据由功能入口负责。",
     "error": "无法获取版本信息，请重试。",
     "state": "版本状态",
-    "selectedLink": "选择了 GitHub 链接"
+    "selectedLink": "选择了 GitHub 链接",
+    "preferenceSaved": "已保存示例偏好；不会安装或重启。",
+    "updateRequested": "已选择查看更新；组件预览不会安装或重启。",
+    "dismissed": "已收起更新提示"
   },
   "appearance": {
     "title": "外观选项",
