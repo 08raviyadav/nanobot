@@ -1092,6 +1092,20 @@
   }
 }
 
+/* loading.dev Ring, Copyright (c) 2026 Jakub Krehel (MIT); THIRD_PARTY_NOTICES.md. */
+.sidebar-running-ring {
+  transform-origin: center;
+  animation: sidebar-running-ring 800ms linear infinite;
+}
+@keyframes sidebar-running-ring {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-running-ring {
+    animation: none;
+  }
+}
+
 @media (pointer: coarse) {
   /* Readable form text avoids Safari's focus zoom without disabling the user's
      pinch zoom. Keep this after utilities so compact desktop overrides cannot

@@ -1884,6 +1884,12 @@ function ChatsFoldFooter({
   );
 }
 
+function synchronizeRunningRing(element: SVGCircleElement | null) {
+  if (!element) return;
+  // Align pending animations before their first frame, not only after animationstart.
+  for (const animation of element.getAnimations()) animation.startTime = 0;
+}
+
 function SessionActivityIndicator({
   state,
 }: {
@@ -1917,7 +1923,18 @@ function SessionActivityIndicator({
           aria-label={label}
           className="grid h-4 w-4 shrink-0 place-items-center"
         >
-          <span className="h-3 w-3 animate-spin rounded-full border border-blue-500/25 border-t-blue-500 [animation-duration:1.4s] motion-reduce:animate-none dark:border-blue-400/25 dark:border-t-blue-400" />
+          <svg
+            className="h-3 w-3 text-sidebar-muted-foreground"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" opacity="0.2" />
+            <circle
+              cx="12" cy="12" r="10" strokeDasharray="16 46.8" strokeLinecap="round"
+              className="sidebar-running-ring"
+              ref={synchronizeRunningRing}
+              onAnimationStart={(event) => synchronizeRunningRing(event.currentTarget)}
+            />
+          </svg>
         </span>
       </HoverHint>
     );
