@@ -216,6 +216,32 @@ function catalogFeature(
   };
 }
 
+function configuredEmailFeature(overrides: Partial<NanobotFeatureInfo> = {}): NanobotFeatureInfo {
+  return {
+    ...catalogFeature("email", true),
+    display_name: "Email",
+    webui: "webui/index.ts",
+    config_values: {
+      "channels.email.consentGranted": "true",
+      "channels.email.imapHost": "imap.example.com",
+      "channels.email.imapUsername": "bot@example.com",
+      "channels.email.smtpHost": "smtp.example.com",
+      "channels.email.smtpUsername": "bot@example.com",
+    },
+    configured_fields: [
+      "channels.email.consentGranted",
+      "channels.email.imapHost",
+      "channels.email.imapUsername",
+      "channels.email.imapPassword",
+      "channels.email.smtpHost",
+      "channels.email.smtpUsername",
+      "channels.email.smtpPassword",
+    ],
+    setup: channelSetupContract("email"),
+    ...overrides,
+  };
+}
+
 describe("Settings channels", () => {
   installSettingsViewTestHooks();
 
@@ -1411,7 +1437,7 @@ describe("Settings channels", () => {
     expect(within(behavior).getByRole("radio", { name: "All messages" })).toBeChecked();
 
     fireEvent.click(advanced);
-    expect(advanced).toHaveAttribute("aria-expanded", "false");
+    await waitFor(() => expect(advanced).toHaveAttribute("aria-expanded", "false"));
     expect(behavior).not.toBeVisible();
     advanced.focus();
     await userEvent.setup().keyboard("[Space]");
@@ -1689,8 +1715,8 @@ describe("Settings channels", () => {
     expect(notGranted).toHaveAttribute("aria-invalid", "true");
     expect(granted).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByText("Required to complete setup.")).toBeInTheDocument();
-    expect(requestMutationMock.mock.calls.some(([action]) => (
-      action === "settings.channel.validate" || action === "settings.channel.configure"
+    expect(requestMutationMock.mock.calls.some(([action, args]) => (
+      action === "settings.channel.validate" || (action === "settings.channel.configure" && args.enable === true)
     ))).toBe(false);
 
     fireEvent.click(granted);
@@ -1723,7 +1749,7 @@ describe("Settings channels", () => {
     );
   });
 
-  it("autosaves Email edits and waits for the save before closing", async () => {
+  it("commits Email edits on blur and waits for the save before closing", async () => {
     let resolveConfigure: ((value: Record<string, unknown>) => void) | undefined;
     const configureResult = new Promise<Record<string, unknown>>((resolve) => {
       resolveConfigure = resolve;
@@ -1737,38 +1763,7 @@ describe("Settings channels", () => {
         if (url === "/api/settings/mcp-presets") return jsonResponse({ presets: [], installed_count: 0 });
         if (url === "/api/settings/nanobot-features") {
           return jsonResponse({
-            features: [{
-              name: "email",
-              display_name: "Email",
-              webui: "webui/index.ts",
-              type: "channel",
-              enabled: true,
-              configured: true,
-              installed: true,
-              ready: true,
-              running: true,
-              runtime_status: "running",
-              status: "enabled",
-              install_supported: true,
-              requires_restart: false,
-              config_values: {
-                "channels.email.consentGranted": "true",
-                "channels.email.imapHost": "imap.example.com",
-                "channels.email.imapUsername": "bot@example.com",
-                "channels.email.smtpHost": "smtp.example.com",
-                "channels.email.smtpUsername": "bot@example.com",
-              },
-              configured_fields: [
-                "channels.email.consentGranted",
-                "channels.email.imapHost",
-                "channels.email.imapUsername",
-                "channels.email.imapPassword",
-                "channels.email.smtpHost",
-                "channels.email.smtpUsername",
-                "channels.email.smtpPassword",
-              ],
-              setup: channelSetupContract("email"),
-            }],
+            features: [configuredEmailFeature({ running: true, runtime_status: "running" })],
             enabled_count: 1,
           });
         }
@@ -1790,6 +1785,7 @@ describe("Settings channels", () => {
     fireEvent.change(screen.getByLabelText("IMAP host"), {
       target: { value: "imap.changed.example.com" },
     });
+    fireEvent.blur(screen.getByLabelText("IMAP host"));
 
     await waitFor(() => expect(requestMutationMock).toHaveBeenCalledWith(
       "settings.channel.configure",
@@ -1811,6 +1807,75 @@ describe("Settings channels", () => {
       await configureResult;
     });
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
+
+  it("keeps focused Email advanced edits unsaved when an earlier blur save completes", async () => {
+    const user = userEvent.setup();
+    let resolveConfigure: ((value: Record<string, unknown>) => void) | undefined;
+    const configureResult = new Promise<Record<string, unknown>>((resolve) => {
+      resolveConfigure = resolve;
+    });
+    const emailFeature = configuredEmailFeature();
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/settings") return jsonResponse(settingsPayload());
+      if (url === "/api/settings/nanobot-features") {
+        return jsonResponse({ features: [emailFeature], enabled_count: 1 });
+      }
+      return jsonResponse({});
+    }));
+    requestMutationMock
+      .mockResolvedValue({ name: "email", saved: true, saved_keys: ["channels.email.trustedAuthservIds"] })
+      .mockReturnValueOnce(configureResult);
+
+    renderSettingsView({ initialSection: "channels" });
+    await user.click(await screen.findByRole("button", { name: "View Email settings" }));
+    await user.click(screen.getByRole("button", { name: "Advanced" }));
+    const fromAddress = screen.getByRole("textbox", { name: "From address" });
+    const trustedServices = screen.getByRole("textbox", { name: "Trusted authentication services" });
+
+    await user.type(fromAddress, "changed@example.com");
+    expect(requestMutationMock).not.toHaveBeenCalled();
+    await user.click(trustedServices);
+    await waitFor(() => expect(requestMutationMock).toHaveBeenCalledTimes(1));
+    expect(requestMutationMock).toHaveBeenNthCalledWith(
+      1,
+      "settings.channel.configure",
+      {
+        name: "email",
+        values: expect.objectContaining({ "channels.email.fromAddress": "changed@example.com" }),
+      },
+      150_000,
+    );
+    expect(requestMutationMock.mock.calls[0][1].values).not.toHaveProperty("channels.email.trustedAuthservIds");
+    expect(screen.getByText("Saving")).toBeVisible();
+
+    await user.type(trustedServices, "mx.receiver.example");
+    expect(trustedServices).toHaveFocus();
+    expect(requestMutationMock).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      resolveConfigure?.({ name: "email", saved: true, saved_keys: ["channels.email.fromAddress"] });
+      await configureResult;
+    });
+
+    expect(trustedServices).toHaveFocus();
+    expect(trustedServices).toHaveValue("mx.receiver.example");
+    expect(requestMutationMock).toHaveBeenCalledTimes(1);
+
+    await user.tab();
+    await waitFor(() => expect(requestMutationMock).toHaveBeenCalledTimes(2));
+    expect(requestMutationMock).toHaveBeenNthCalledWith(
+      2,
+      "settings.channel.configure",
+      {
+        name: "email",
+        values: expect.objectContaining({
+          "channels.email.fromAddress": "changed@example.com",
+          "channels.email.trustedAuthservIds": "mx.receiver.example",
+        }),
+      },
+      150_000,
+    );
   });
 
   it("prefills saved channel config without exposing secrets", async () => {
