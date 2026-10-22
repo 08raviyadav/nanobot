@@ -1815,6 +1815,32 @@
       "messages": "Estado de mensajes"
     },
     "compaction": {
+      "reasons": {
+        "idle": {
+          "started": "Compresión automática por inactividad en curso",
+          "succeeded": "Compresión automática por inactividad completada",
+          "failed": "Falló la compresión automática por inactividad",
+          "cancelled": "No se completó la compresión automática por inactividad"
+        },
+        "context_pressure": {
+          "started": "Comprimiendo un contexto extenso",
+          "succeeded": "Contexto extenso comprimido",
+          "failed": "Falló la compresión de un contexto extenso",
+          "cancelled": "Compresión de un contexto extenso cancelada"
+        },
+        "manual": {
+          "started": "Compresión manual en curso",
+          "succeeded": "Compresión manual completada",
+          "failed": "Falló la compresión manual",
+          "cancelled": "Compresión manual cancelada"
+        },
+        "provider_native": {
+          "started": "Comprimiendo el contexto en el servidor del proveedor",
+          "succeeded": "Contexto comprimido en el servidor del proveedor",
+          "failed": "Falló la compresión en el servidor del proveedor",
+          "cancelled": "Compresión cancelada en el servidor del proveedor"
+        }
+      },
       "cancelled": "Compresión de contexto cancelada",
       "empty": "No hay contexto que comprimir.",
       "started": "Comprimiendo el contexto",

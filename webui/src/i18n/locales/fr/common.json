@@ -1814,6 +1814,32 @@
       "messages": "État des messages"
     },
     "compaction": {
+      "reasons": {
+        "idle": {
+          "started": "Conversation inactive : compression automatique en cours",
+          "succeeded": "Conversation inactive : compression automatique terminée",
+          "failed": "Conversation inactive : échec de la compression automatique",
+          "cancelled": "Conversation inactive : compression automatique non terminée"
+        },
+        "context_pressure": {
+          "started": "Compression d’un contexte volumineux en cours",
+          "succeeded": "Contexte volumineux compressé",
+          "failed": "Échec de la compression d’un contexte volumineux",
+          "cancelled": "Compression d’un contexte volumineux annulée"
+        },
+        "manual": {
+          "started": "Compression manuelle en cours",
+          "succeeded": "Compression manuelle terminée",
+          "failed": "Échec de la compression manuelle",
+          "cancelled": "Compression manuelle annulée"
+        },
+        "provider_native": {
+          "started": "Compression en cours sur le serveur du fournisseur",
+          "succeeded": "Contexte compressé sur le serveur du fournisseur",
+          "failed": "Échec de la compression sur le serveur du fournisseur",
+          "cancelled": "Compression annulée sur le serveur du fournisseur"
+        }
+      },
       "cancelled": "Compression du contexte annulée",
       "empty": "Aucun contexte à compresser.",
       "started": "Compression du contexte",

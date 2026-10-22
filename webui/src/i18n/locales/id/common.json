@@ -1814,6 +1814,32 @@
       "messages": "Status pesan"
     },
     "compaction": {
+      "reasons": {
+        "idle": {
+          "started": "Memadatkan konteks secara otomatis saat tidak ada pesan baru",
+          "succeeded": "Konteks dipadatkan otomatis saat tidak ada pesan baru",
+          "failed": "Gagal memadatkan konteks secara otomatis saat tidak ada pesan baru",
+          "cancelled": "Pemadatan konteks otomatis saat tidak ada pesan baru tidak selesai"
+        },
+        "context_pressure": {
+          "started": "Memadatkan konteks karena sudah panjang",
+          "succeeded": "Konteks yang panjang telah dipadatkan",
+          "failed": "Gagal memadatkan konteks yang panjang",
+          "cancelled": "Pemadatan konteks yang panjang dibatalkan"
+        },
+        "manual": {
+          "started": "Memadatkan konteks atas permintaan Anda",
+          "succeeded": "Konteks dipadatkan atas permintaan Anda",
+          "failed": "Pemadatan konteks yang Anda minta gagal",
+          "cancelled": "Pemadatan konteks yang Anda minta dibatalkan"
+        },
+        "provider_native": {
+          "started": "Penyedia model sedang memadatkan konteks",
+          "succeeded": "Penyedia model telah memadatkan konteks",
+          "failed": "Pemadatan konteks di server penyedia model gagal",
+          "cancelled": "Pemadatan konteks di server penyedia model dibatalkan"
+        }
+      },
       "cancelled": "Pemadatan konteks dibatalkan",
       "empty": "Tidak ada konteks yang perlu dipadatkan.",
       "started": "Memadatkan konteks",
