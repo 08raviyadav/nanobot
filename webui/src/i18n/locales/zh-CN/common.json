@@ -745,6 +745,13 @@
       "search": "搜索高级设置",
       "noResults": "没有匹配的设置。",
       "pending": "有未保存的修改",
+      "idleCompaction": {
+        "label": "空闲自动压缩",
+        "help": "空闲超时后压缩上下文，减少后续用量。",
+        "wait": "空闲时限",
+        "minutes": "分钟",
+        "numberError": "请输入非负整数分钟数。"
+      },
       "numberError": "请输入允许范围内的有效数字。",
       "activeModel": "使用当前模型",
       "none": "无",

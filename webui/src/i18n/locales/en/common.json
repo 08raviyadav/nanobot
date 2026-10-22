@@ -745,6 +745,13 @@
       "search": "Find an advanced setting",
       "noResults": "No matching settings.",
       "pending": "Unsaved changes",
+      "idleCompaction": {
+        "label": "Auto-compact idle sessions",
+        "help": "Automatically compact context after the idle timeout to reduce token usage on subsequent requests.",
+        "wait": "Idle timeout",
+        "minutes": "minutes",
+        "numberError": "Enter a non-negative whole number of minutes."
+      },
       "numberError": "Enter a valid number within the allowed range.",
       "activeModel": "Use active model",
       "none": "None",
