@@ -185,6 +185,8 @@ On touch-primary phones and tablets, **Enter** inserts a newline; tap the send a
 
 During a response, desktop Enter appends input to one waiting message, preserving order, attachments and references. It sends when the response finishes. **Send now** or Enter on an empty input sends it immediately as guidance; the send arrow submits the waiting content together with any draft. **Edit message** and **Delete message** act on the whole waiting message. Additions that exceed limits stay in the input. Stopping a turn or a failed send preserves the waiting message for manual sending.
 
+Automatic sending continues across topic switches and short reconnects while the page stays live. Reloading, reopening, leaving the page, or the browser freezing it restores waiting content for manual sending; choose **Send now** or edit and send it when ready.
+
 For image generation, configure an image provider first and then use the WebUI image mode from the composer. See [`image-generation.md`](./image-generation.md) for provider setup and output behavior.
 
 ## Channels
