@@ -1488,11 +1488,12 @@ export type InboundEvent =
       event: "message_accepted";
       chat_id: string;
       turn_id: string;
+      media_urls?: UIMediaAttachment[];
       starts_turn?: boolean;
       active_turn_id?: string;
       started_at?: number;
     }
-  | {
+  | ({
       event: "user_message";
       chat_id: string;
       text: string;
@@ -1506,14 +1507,14 @@ export type InboundEvent =
       mcp_presets?: UIMcpPresetAttachment[];
       session_mentions?: SessionMention[];
       provenance?: { session_message?: UISessionMessage };
-    }
+    } & InboundTurnMetadata)
   | ({
       event: "message";
       chat_id: string;
       text: string;
       reply_to?: string;
       media?: string[];
-      media_urls?: Array<{ url: string; name?: string }>;
+      media_urls?: Array<{ url: string; name?: string; kind?: UIMediaKind }>;
       tool_events?: ToolProgressEvent[];
       /** Oversized persisted activity detail, fetched only when the trace is expanded. */
       trace_detail?: UITraceDetail;
@@ -1677,10 +1678,7 @@ export type ThreadProjectionEvent = Extract<
  * surface. ``name`` is advisory and is surfaced as the placeholder label when
  * the session is replayed.
  */
-export interface OutboundMedia {
-  data_url: string;
-  name?: string;
-}
+export type OutboundMedia = import("../../../packages/client-events/attachments").DraftAttachment;
 
 export interface OutboundCliAppMention {
   name: string;

@@ -67,6 +67,20 @@ describe("merged waiting messages", () => {
     });
   });
 
+  it.each(["video", "file"] as const)("sends a restored large local %s and a browser upload without spending local bytes", (kind) => {
+    const local = { path: `C:\\project\\large.${kind === "video" ? "mp4" : "pdf"}`, name: "large reference", kind, size: 64 * 1024 * 1024 + 1, mime: kind === "video" ? "video/mp4" : "application/pdf", url: "/api/media/sig/local" };
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify([
+      { id: "first", text: "read references", images: [{ local, kind }, DOCUMENT] },
+    ]));
+    const onSend = vi.fn();
+    render(<ThreadComposer onSend={onSend} pendingQueueKey="chat-a" ingressLimits={limits({ max_file_bytes: 5, max_total_bytes: 5 })} />);
+    fireEvent.click(screen.getByRole("button", { name: "Send now" }));
+    expect(onSend).toHaveBeenCalledWith("read references", [
+      expect.objectContaining({ media: { path: local.path, name: local.name } }),
+      expect.objectContaining({ media: { data_url: DOCUMENT.dataUrl, name: DOCUMENT.name } }),
+    ]);
+  });
+
   it("preserves merged text longer than the former per-entry storage truncation across remounts", () => {
     const onSend = vi.fn();
     const first = render(<ThreadComposer onSend={onSend} pendingQueueKey="chat-a" isStreaming />);
@@ -155,7 +169,7 @@ describe("merged waiting messages", () => {
     render(<ThreadComposer {...props} />);
     await waitFor(() => expect(screen.queryByLabelText("Encoding…")).not.toBeInTheDocument());
     expect(screen.getAllByTestId("composer-chip")).toHaveLength(2);
-    expect(draftStore.get("chat-a")?.files.map((file) => file.name)).toEqual(["first.png", "second.txt"]);
+    expect(draftStore.get("chat-a")?.attachments.map((file) => file.name)).toEqual(["first.png", "second.txt"]);
   });
 
   it("retains a merged rejected send after leaving the topic during upload", async () => {
